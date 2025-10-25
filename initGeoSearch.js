@@ -58,44 +58,60 @@ function startGeoSearch(center, radius, searchId, polygonKey) {
     return;
   }
   
-  // *** NUEVA LÓGICA DE EXPANSIÓN ***
-  const expandedKeywords = expandKeywords(rawKeywords);
   console.log("Palabras clave originales:", rawKeywords);
-  console.log("Palabras clave expandidas para búsqueda:", expandedKeywords);
-  // *********************************
 
-  // Iterar sobre cada palabra clave original para iniciar un grupo de búsqueda
+  // Iterar sobre cada palabra clave para iniciar la búsqueda
   rawKeywords.forEach(function(originalKeyword) {
-    // Generar un único ID para el grupo de búsqueda (todas las expansiones de esta keyword)
-    var groupSearchId = guid();
+    var searchId = guid();
     
-    // 1. Obtener las palabras clave expandidas para esta keyword original
-    const expandedKeywordsForGroup = expandKeywords([originalKeyword]);
+    // 1. Verificar si la palabra clave tiene expansiones definidas
+    const normalizedKeyword = originalKeyword.trim().toLowerCase();
+    const expansionTerms = KEYWORD_EXPANSION_MAP[normalizedKeyword];
     
-    // 2. Crear la entrada en el objeto searches (usando la keyword original)
-    // Esto asegura que el color y la referencia se basen en la keyword que el usuario ingresó.
-    var search = {center: center, radius: radius, keyword: originalKeyword, markers: []};
-    searches[groupSearchId] = search;
-
-    console.log("Iniciando grupo de búsqueda para: " + originalKeyword + " con ID: " + groupSearchId);
-    
-    // 3. Iterar sobre las palabras clave expandidas para realizar las llamadas a la API
-    expandedKeywordsForGroup.forEach(function(expandedKeyword) {
-      console.log("  -> Llamando a nearby search con keyword expandida: " + expandedKeyword);
+    if (expansionTerms && expansionTerms.length > 0) {
+      // *** CASO 1: Palabra clave con expansiones ***
+      console.log("Iniciando búsqueda expandida para: " + originalKeyword);
       
-      // La lógica de búsqueda original usa radius - (radius/4), lo cual puede ser un factor para la "potencia"
+      // Crear la entrada en el objeto searches (usando la keyword original)
+      var search = {center: center, radius: radius, keyword: originalKeyword, markers: []};
+      searches[searchId] = search;
+
+      // Usar la función expandKeywords para obtener todos los términos de búsqueda correctamente normalizados
+      var allSearchTerms = expandKeywords([originalKeyword]);
+      console.log("  -> Términos de búsqueda expandidos:", allSearchTerms);
+      
+      allSearchTerms.forEach(function(searchTerm) {
+        console.log("  -> Buscando: " + searchTerm);
+        
+        var searchRadius = radius - (radius / 4);
+
+        service.nearbySearch({
+          location: center,
+          radius: searchRadius,
+          keyword: searchTerm,
+        }, function(results, status, pagination){
+          processResults(results, status, pagination, searchId, polygonKey);
+        });
+      });
+    } else {
+      // *** CASO 2: Palabra clave sin expansiones (búsqueda simple como el original) ***
+      console.log("Iniciando búsqueda simple para: " + originalKeyword);
+      
+      // Crear la entrada en el objeto searches
+      var search = {center: center, radius: radius, keyword: originalKeyword, markers: []};
+      searches[searchId] = search;
+
+      // Realizar una única búsqueda con la palabra clave original (como en el código original)
       var searchRadius = radius - (radius / 4);
 
       service.nearbySearch({
         location: center,
         radius: searchRadius,
-        keyword: expandedKeyword,
-        // type: $("#types").val(), // Se mantiene comentado como en el original, si existe un input #types se podría usar.
+        keyword: originalKeyword,
       }, function(results, status, pagination){
-        // Usar el mismo groupSearchId para todos los resultados de este grupo
-        processResults(results, status, pagination, groupSearchId, polygonKey);
+        processResults(results, status, pagination, searchId, polygonKey);
       });
-    });
+    }
   });
   
   disable_btns(); // Deshabilitar botones al iniciar la búsqueda, se habilitan en processResults.
