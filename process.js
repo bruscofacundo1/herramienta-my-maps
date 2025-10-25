@@ -23,18 +23,12 @@ function processResults (results, status, pagination, searchId, polygonKey) {
       console.log("✅ FILTRO DE POLÍGONO DESACTIVADO - manteniendo todos los resultados:", results.length);
     }
     
-    var initialCount = number_of_markers(searches);
     createMarkers(results, searchId);
-    var finalCount = number_of_markers(searches);
-    var newMarkers = finalCount - initialCount;
     
-    console.log(`Procesando resultados: ${results.length} recibidos, ${newMarkers} nuevos marcadores agregados`);
-    
-    // Actualizar el contador de resultados inmediatamente después de agregar marcadores
-    $("#resultadosLbl").text(finalCount);
-    
-    // Forzar una actualización visual del contador
-    $("#resultadosLbl").effect("highlight", {}, 1000);
+    // 🔄 CAMBIO CLAVE PARA CÍRCULOS: Actualizar el contador SIEMPRE, sin importar si es polígono o círculo
+    var currentCount = number_of_markers(searches);
+    $("#resultadosLbl").text(currentCount);
+    console.log(`Contador actualizado a: ${currentCount} marcadores`);
 
     if (pagination.hasNextPage) {
         pagination.nextPage();
@@ -43,9 +37,7 @@ function processResults (results, status, pagination, searchId, polygonKey) {
       update_view();
       draw_circles();
       // Actualizar el label de resultados al finalizar la búsqueda
-      var totalCount = number_of_markers(searches);
-      $("#resultadosLbl").text(totalCount); // Solo el número
-      console.log(`Búsqueda completada. Total de marcadores: ${totalCount}`);
+      $("#resultadosLbl").text(number_of_markers(searches)); // Solo el número
       $("#resultadosLbl").effect("highlight", {}, 2000);
     }
   }
@@ -63,23 +55,17 @@ function filterResultsByPolygon(results, polygon) {
 
 function createMarkers (places, searchId) {
   var bounds = new google.maps.LatLngBounds();
-  var addedCount = 0;
-  var duplicateCount = 0;
 
   for (var i = 0, place; place = places[i]; i++) {
 
     if(markers(searches).some(function( x) {return x.place_id == place.place_id})) {
-      console.log(`Marcador duplicado omitido: ${place.name} (ID: ${place.place_id})`);
-      duplicateCount++;
+      console.log("repetido!");
     }
     else{
-      console.log(`Nuevo marcador agregado: ${place.name} (ID: ${place.place_id})`);
-      addedCount++;
+      console.log("no estaba...");
 
       var marker = new google.maps.Marker(markerData(place, searchId))
       searches[searchId]["markers"].push(marker);
     }
   }
-  
-  console.log(`Resumen de createMarkers: ${addedCount} nuevos, ${duplicateCount} duplicados de ${places.length} lugares recibidos`);
 }

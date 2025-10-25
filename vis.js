@@ -115,7 +115,7 @@ function update_view(){
     draw_circles();
   }
   setMapOnAll(markers(searches), map);
-  // Se usa .text() para actualizar el contador de resultados
+  // 🔄 CAMBIO CLAVE PARA CÍRCULOS: Asegurar que el contador se actualice siempre
   var totalCount = number_of_markers(searches);
   $('#resultadosLbl').text(totalCount);
   console.log(`update_view: Contador actualizado a ${totalCount} marcadores`);
