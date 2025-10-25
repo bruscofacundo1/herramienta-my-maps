@@ -90,6 +90,7 @@ function startGeoSearch(center, radius, searchId, polygonKey) {
   
   // Reiniciar el contador de resultados y limpiar búsquedas anteriores
   clear_searches(); // Esta función ahora también actualiza el contador a 0
+  console.log("Iniciando nueva búsqueda geo - búsquedas anteriores limpiadas");
 
   // Obtener las palabras clave de los inputs
   var rawKeywords = $('input[name^=keywords]').map(function(idx, elem) {

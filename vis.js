@@ -60,11 +60,11 @@ function removeKeyword(elem) {
 }
 
 update_csv_name()
-$('#update_name').click(update_csv_name)
+ $('#update_name').click(update_csv_name)
 
-$('.action_buttons').prop('disabled', true)
+ $('.action_buttons').prop('disabled', true)
 
-$('#save').click(function () {
+ $('#save').click(function () {
   exportCSVFile(headers, markers(searches), $('#csvfn').val())
 })
 
@@ -72,8 +72,9 @@ function clear_searches(){
   setMapOnAll(markers(searches), null);
   searches = {}
   // Asegurar que el contador de resultados se actualice a 0 al limpiar
-  $('#resultadosLbl').text(number_of_markers(searches)); // number_of_markers(searches) será 0
-  $('#detalles_count').html(0); // Reiniciar el contador de detalles
+  $('#resultadosLbl').text('0'); // Usar '0' directamente en lugar de number_of_markers(searches)
+  $('#detalles_count').html('0'); // Reiniciar el contador de detalles
+  console.log("clear_searches: Todos los marcadores eliminados, contador restablecido a 0");
 }
 
 function clear_circles(){
@@ -91,7 +92,7 @@ function update_details_counter(){
   $('#detalles_count').html(contador_detalles)
 }
 
-$('#clearBtn').click(function () {
+ $('#clearBtn').click(function () {
   if (confirm('Seguro? si no guardaste se pierde la búsqueda!')) {
     clear_searches();
     clear_circles();
@@ -99,7 +100,8 @@ $('#clearBtn').click(function () {
     update_details_counter();
     // $('#places').html('')
     $('.action_buttons').prop('disabled', true)
-    $('#resultadosLbl').html(number_of_markers(searches) + ' resultados')
+    // El contador ya se actualiza en clear_searches(), pero lo aseguramos aquí también
+    $('#resultadosLbl').text('0');
 
   } else {
       // Do nothing!
@@ -114,5 +116,7 @@ function update_view(){
   }
   setMapOnAll(markers(searches), map);
   // Se usa .text() para actualizar el contador de resultados
-  $('#resultadosLbl').text(number_of_markers(searches));
+  var totalCount = number_of_markers(searches);
+  $('#resultadosLbl').text(totalCount);
+  console.log(`update_view: Contador actualizado a ${totalCount} marcadores`);
 }
