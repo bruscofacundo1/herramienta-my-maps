@@ -65,7 +65,7 @@ function initMap() {
   // Inicializar herramientas de dibujo
   initDrawingTools();
   
-  // Inicializar búsqueda geográfica
+  // Inicializar búsqueda geográfica (se define en initGeoSearch.js)
   initGeoSearch();
 
   // Cargar polígonos y círculos guardados
@@ -85,16 +85,30 @@ function enableCircleDrawing() {
   mapClickListener = google.maps.event.addListener(map, 'click', function(event) {
     if (window.drawingMode === 'circle') {
       addPointToCircle(event.latLng);
+    } else if (window.drawingMode === 'search') {
+      // Lógica de búsqueda original al hacer clic en el mapa
+      var radius = parseInt($("#radio").val());
+      var center = event.latLng;
+      
+      // Llamar a la función de búsqueda principal (definida en initGeoSearch.js)
+      startGeoSearch(center, radius, guid(), null);
     }
   });
 }
 
-// Función para deshabilitar el dibujo de círculos
+// Función para deshabilitar el dibujo de círculos y la búsqueda por clic
 function disableCircleDrawing() {
-  // Remover el listener de clic específico para círculos
+  // Remover el listener de clic específico
   if (mapClickListener) {
     google.maps.event.removeListener(mapClickListener);
     mapClickListener = null;
   }
+}
+
+// Función placeholder para initGeoSearch, la implementación real está en initGeoSearch.js
+function initGeoSearch() {
+  // Se asume que el usuario tiene un botón para activar el modo de búsqueda por clic.
+  // Por ahora, solo se define el modo.
+  window.drawingMode = 'none'; 
 }
 

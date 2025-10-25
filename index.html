@@ -342,10 +342,23 @@
         <input type="text" id="csvfn" value="busqueda">
         <input type="button" id="update_name" value="Actualizar">
       </div>
-      <div class="control-section">
-        <label>Radio:</label>
-        <input type="text" id="radio" value="1000">
-      </div>
+	      <div class="control-section">
+	        <label>Radio:</label>
+	        <input type="text" id="radio" value="1000">
+	      </div>
+	      <div class="control-section">
+	        <label><input type="checkbox" id="polygonFilterToggle" checked> Aplicar Filtro de Polígono</label>
+	      </div>
+	      <div class="control-section">
+	        <button id="activateSearchMode" class="action_buttons" onclick="activateSearchMode()">Activar Búsqueda por Clic</button>
+	      </div>
+	      <script>
+	        function activateSearchMode() {
+	          window.drawingMode = 'search';
+	          enableCircleDrawing(); // Reutiliza la función para activar el listener de clic
+	          alert("Modo de búsqueda por clic activado. Haz clic en el mapa para iniciar la búsqueda.");
+	        }
+	      </script>
     </div>
     
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -358,7 +371,7 @@
     <script src="polygons.js"></script>
     <script src="circles.js"></script>
     <script src="drawing.js"></script>
-    <script src="geo_search.js"></script>
+ <script src="initGeoSearch.js"></script>
     <script src="cordoba_filter.js"></script>
     <script src="keywords.js"></script>
     <script src="marker_colors.js"></script>

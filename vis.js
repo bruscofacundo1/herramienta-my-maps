@@ -71,6 +71,9 @@ $('#save').click(function () {
 function clear_searches(){
   setMapOnAll(markers(searches), null);
   searches = {}
+  // Asegurar que el contador de resultados se actualice a 0 al limpiar
+  $('#resultadosLbl').text(number_of_markers(searches)); // number_of_markers(searches) será 0
+  $('#detalles_count').html(0); // Reiniciar el contador de detalles
 }
 
 function clear_circles(){
@@ -110,5 +113,6 @@ function update_view(){
     draw_circles();
   }
   setMapOnAll(markers(searches), map);
-  $('#resultadosLbl').html(number_of_markers(searches));
+  // Se usa .text() para actualizar el contador de resultados
+  $('#resultadosLbl').text(number_of_markers(searches));
 }

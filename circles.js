@@ -92,7 +92,8 @@ function updateCirclesList() {
     // Botón para buscar
     var $searchBtn = $("<button>Buscar</button>");
     $searchBtn.click(function() {
-      searchInCircle(key);
+      // Se asume que searchInCircle está disponible globalmente (definida en initGeoSearch.js)
+      searchInCircle(key); 
     });
     
     $item.append($checkbox, $name, $editBtn, $deleteBtn, $searchBtn);

@@ -1,5 +1,7 @@
 
 function processResults (results, status, pagination, searchId, polygonKey) {
+  var applyPolygonFilter = $("#polygonFilterToggle").prop("checked");
+
   if (status !== google.maps.places.PlacesServiceStatus.OK) {
     if (status === google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
       enable_btns();
@@ -11,20 +13,22 @@ function processResults (results, status, pagination, searchId, polygonKey) {
     }
     return;
   } else {
-    if (polygonKey && polygons[polygonKey]) {
+    if (polygonKey && polygons[polygonKey] && applyPolygonFilter) {
       results = filterResultsByPolygon(results, polygons[polygonKey].polygon);
     }
     
     createMarkers(results, searchId);
+    // Actualizar el contador de resultados inmediatamente después de agregar marcadores
+    $("#resultadosLbl").text(number_of_markers(searches));
 
     if (pagination.hasNextPage) {
-        setTimeout(function() { pagination.nextPage(); }, 2000); // Añadir un retardo de 2 segundos para evitar el estado INVALID_REQUEST
+        pagination.nextPage();
     }else{
       enable_btns();
       update_view();
       draw_circles();
       // Actualizar el label de resultados al finalizar la búsqueda
-      $("#resultadosLbl").text(number_of_markers(searches) + " resultados");
+      $("#resultadosLbl").text(number_of_markers(searches)); // Solo el número
       $("#resultadosLbl").effect("highlight", {}, 2000);
     }
   }

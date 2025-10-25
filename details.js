@@ -64,6 +64,7 @@ function getDetails(){
           marker.telefono = safe(details["international_phone_number"]);
           marker.direccion_completa = safe(details["formatted_address"]);
           marker.website = details["website"] || '';
+          marker.name = details.name || marker.name; // Actualizar el nombre desde los detalles
           marker.rating = details.rating; // CALIFICACION (valor numérico)
           marker.calificacion_total = details.user_ratings_total; // CALIFICACION TOTAL (número de reseñas)
 

@@ -93,6 +93,7 @@ function updatePolygonsList() {
     // Botón para buscar
     var $searchBtn = $('<button>Buscar</button>');
     $searchBtn.click(function() {
+      // Se asume que searchInPolygon está disponible globalmente (definida en initGeoSearch.js)
       searchInPolygon(key);
     });
     
