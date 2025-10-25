@@ -1,5 +1,6 @@
 // Mapa de expansión de palabras clave
 const KEYWORD_EXPANSION_MAP = {
+  // === PALABRAS ESPECIALIZADAS (las que ya tenías) ===
   "ferreteria": ["ferreterías", "ferretero", "herramientas", "bricolaje", "tornillos", "clavos", "materiales de construcción"],
   "pintureria": ["pinturas", "pinturerías", "colores", "decoración", "latex", "esmaltes"],
   "farmacia": ["farmacias", "farmacéutico", "medicamentos", "droguería", "parafarmacia"],
@@ -8,7 +9,14 @@ const KEYWORD_EXPANSION_MAP = {
   "panaderia": ["panaderías", "pan", "pastelería", "confitería", "facturas"],
   "carniceria": ["carnicerías", "carne", "frigorífico", "cortes de carne"],
   "gomería": ["gomerías", "neumáticos", "llantas", "vulcanización", "cubiertas"],
-  // Agrega más categorías según sea necesario
+  
+  // === EXPANSIÓN BÁSICA PARA PALABRAS COMUNES ===
+  "restaurant": ["restaurant", "restaurantes", "comida", "gastronomía", "restaurante"],
+  "cafe": ["cafe", "cafés", "cafetería", "coffee"],
+  "hotel": ["hotel", "hoteles", "hostal", "alojamiento"],
+  "bar": ["bar", "bares", "cervecería", "pub"],
+  "tienda": ["tienda", "tiendas", "negocio", "local"],
+  "comercio": ["comercio", "comercios", "negocio", "establecimiento"],
 };
 
 /**
@@ -37,6 +45,45 @@ function expandKeywords(inputKeywords) {
   return Array.from(expanded).filter(k => k !== "");
 }
 
+/**
+ * Función mejorada para encontrar coincidencias flexibles
+ */
+function findFlexibleMatch(word1, word2) {
+  // Eliminar acentos y caracteres especiales
+  const normalizeWord = (word) => {
+    return word.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  };
+  
+  const cleanWord1 = normalizeWord(word1);
+  const cleanWord2 = normalizeWord(word2);
+  
+  // Caso 1: Una palabra contiene a la otra
+  if (cleanWord1.includes(cleanWord2) || cleanWord2.includes(cleanWord1)) {
+    return true;
+  }
+  
+  // Caso 2: Coincidencia de raíz (eliminar terminaciones -s, -es, -a, etc.)
+  const getRoot = (word) => {
+    return word.replace(/(s|es|a|as|o|os|e|es)$/, '');
+  };
+  
+  const root1 = getRoot(cleanWord1);
+  const root2 = getRoot(cleanWord2);
+  
+  if (root1 === root2 && root1.length > 2) {
+    return true;
+  }
+  
+  // Caso 3: Coincidencia parcial significativa (al menos 70% de similitud)
+  const shorter = cleanWord1.length < cleanWord2.length ? cleanWord1 : cleanWord2;
+  const longer = cleanWord1.length < cleanWord2.length ? cleanWord2 : cleanWord1;
+  
+  if (longer.includes(shorter) && shorter.length >= longer.length * 0.7) {
+    return true;
+  }
+  
+  return false;
+}
 
 function startGeoSearch(center, radius, searchId, polygonKey) {
   var service = new google.maps.places.PlacesService(map);
@@ -64,20 +111,42 @@ function startGeoSearch(center, radius, searchId, polygonKey) {
   rawKeywords.forEach(function(originalKeyword) {
     var searchId = guid();
     
-    // 1. Verificar si la palabra clave tiene expansiones definidas
+    // 1. Verificar si la palabra clave tiene expansiones definidas (búsqueda flexible mejorada)
     const normalizedKeyword = originalKeyword.trim().toLowerCase();
-    const expansionTerms = KEYWORD_EXPANSION_MAP[normalizedKeyword];
+    let expansionTerms = null;
+    let matchedKey = null;
+    
+    // Buscar coincidencia exacta primero
+    if (KEYWORD_EXPANSION_MAP[normalizedKeyword]) {
+      expansionTerms = KEYWORD_EXPANSION_MAP[normalizedKeyword];
+      matchedKey = normalizedKeyword;
+      console.log("✅ Coincidencia exacta para: " + originalKeyword);
+    } else {
+      // Si no encuentra, buscar coincidencia flexible con lógica mejorada
+      for (let key in KEYWORD_EXPANSION_MAP) {
+        if (findFlexibleMatch(normalizedKeyword, key)) {
+          expansionTerms = KEYWORD_EXPANSION_MAP[key];
+          matchedKey = key;
+          console.log("✅ Coincidencia flexible: '" + normalizedKeyword + "' coincide con '" + key + "'");
+          break;
+        }
+      }
+    }
     
     if (expansionTerms && expansionTerms.length > 0) {
-      // *** CASO 1: Palabra clave con expansiones ***
+      // *** CASO 1: Palabra clave con expansiones (coincidencia exacta o flexible) ***
       console.log("Iniciando búsqueda expandida para: " + originalKeyword);
+      console.log("Usando lista de: " + matchedKey);
       
       // Crear la entrada en el objeto searches (usando la keyword original)
       var search = {center: center, radius: radius, keyword: originalKeyword, markers: []};
       searches[searchId] = search;
 
-      // Usar la función expandKeywords para obtener todos los términos de búsqueda correctamente normalizados
-      var allSearchTerms = expandKeywords([originalKeyword]);
+      // Crear array de búsqueda: palabra original + expansiones de la clave encontrada
+      var allSearchTerms = [originalKeyword, ...expansionTerms];
+      // Eliminar duplicados
+      allSearchTerms = [...new Set(allSearchTerms)];
+      
       console.log("  -> Términos de búsqueda expandidos:", allSearchTerms);
       
       allSearchTerms.forEach(function(searchTerm) {
